@@ -1,7 +1,7 @@
-2026/06/21 14:00:41.885103 [Topic:safety-topic] Recovered. Messages: 1000, MaxOffset: 1000
-2026/06/21 14:00:41.886486 [Broker:broker-1] Listening on :8081
-2026/06/21 14:01:04.292723 [Topic:lb-topic] Recovered. Messages: 0, MaxOffset: 0
-2026/06/21 14:01:09.113294 [Topic:restart-topic] Recovered. Messages: 0, MaxOffset: 0
-2026/06/21 14:01:09.948029 [Topic:multigroup-topic] Recovered. Messages: 0, MaxOffset: 0
-2026/06/21 14:01:12.820412 [Broker:broker-1] Shutting down gracefully...
-2026/06/21 14:01:12.820475 [Broker:broker-1] Shutdown complete. Bye!
+2026/06/21 14:04:15.227161 [Topic:safety-topic] Recovered. Messages: 1000, MaxOffset: 1000
+2026/06/21 14:04:15.228680 [Broker:broker-1] Listening on :8081
+2026/06/21 14:04:37.635341 [Topic:lb-topic] Recovered. Messages: 0, MaxOffset: 0
+2026/06/21 14:04:42.458388 [Topic:restart-topic] Recovered. Messages: 0, MaxOffset: 0
+2026/06/21 14:04:43.297663 [Topic:multigroup-topic] Recovered. Messages: 0, MaxOffset: 0
+2026/06/21 14:04:46.165016 [Broker:broker-1] Shutting down gracefully...
+2026/06/21 14:04:46.165079 [Broker:broker-1] Shutdown complete. Bye!

@@ -8,7 +8,7 @@ RED='\033[0;31m'
 NC='\033[0m'
 
 echo -e "${CYAN}=====================================================${NC}"
-echo -e "${CYAN}      Панель запуска Брокера Сообщений (SENIOR)      ${NC}"
+echo -e "${CYAN}      Панель запуска Брокера Сообщений               ${NC}"
 echo -e "${CYAN}=====================================================${NC}"
 echo -e "Выбери вариант запуска:"
 echo -e "1) Локальный запуск и авто-тестирование (требуется Go на хосте)"
@@ -34,11 +34,11 @@ case $OPTION in
     echo -e "Брокер 2 доступен на: http://localhost:8082"
     echo -e "\nПроверим статус кластера через 3 секунды..."
     sleep 3
-    docker compose exec queue-manager-senior /app/demo -mode status
+    docker compose exec queue-manager-node /app/demo -mode status
     ;;
   3)
     echo -e "\n${YELLOW}[*] Запуск примера работы внутри Docker...${NC}"
-    if ! docker compose ps | grep -q "queue-manager-senior"; then
+    if ! docker compose ps | grep -q "queue-manager-node"; then
       echo -e "${RED}Ошибка: Докер-кластер не запущен! Сначала выбери пункт 2.${NC}"
       exit 1
     fi

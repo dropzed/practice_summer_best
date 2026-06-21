@@ -1,7 +1,7 @@
-2026/06/21 14:01:10.362549 [Demo] Subscriber "sub-groupB" in group "group-B" starting for topic "multigroup-topic" to read 5 messages...
-2026/06/21 14:01:10.564913 [sub-groupB] Received: offset=1, payload="multi-msg-1" (Total consumed: 1/5)
-2026/06/21 14:01:10.564927 [sub-groupB] Received: offset=2, payload="multi-msg-2" (Total consumed: 2/5)
-2026/06/21 14:01:10.564931 [sub-groupB] Received: offset=3, payload="multi-msg-3" (Total consumed: 3/5)
-2026/06/21 14:01:10.564935 [sub-groupB] Received: offset=4, payload="multi-msg-4" (Total consumed: 4/5)
-2026/06/21 14:01:10.564939 [sub-groupB] Received: offset=5, payload="multi-msg-5" (Total consumed: 5/5)
-2026/06/21 14:01:10.564981 [Demo] Reached target count of 5 messages. Gracefully exiting.
+2026/06/21 14:04:43.712852 [Demo] Subscriber "sub-groupB" in group "group-B" starting for topic "multigroup-topic" to read 5 messages...
+2026/06/21 14:04:43.915257 [sub-groupB] Received: offset=1, payload="multi-msg-1" (Total consumed: 1/5)
+2026/06/21 14:04:43.915271 [sub-groupB] Received: offset=2, payload="multi-msg-2" (Total consumed: 2/5)
+2026/06/21 14:04:43.915274 [sub-groupB] Received: offset=3, payload="multi-msg-3" (Total consumed: 3/5)
+2026/06/21 14:04:43.915277 [sub-groupB] Received: offset=4, payload="multi-msg-4" (Total consumed: 4/5)
+2026/06/21 14:04:43.915280 [sub-groupB] Received: offset=5, payload="multi-msg-5" (Total consumed: 5/5)
+2026/06/21 14:04:43.915320 [Demo] Reached target count of 5 messages. Gracefully exiting.

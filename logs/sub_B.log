@@ -1,7 +1,8 @@
-2026/06/21 14:01:04.090501 [Demo] Subscriber "sub-B" in group "lb-group" starting for topic "lb-topic" to read 5 messages...
-2026/06/21 14:01:05.291818 [sub-B] Received: offset=2, payload="lb-msg-2" (Total consumed: 1/5)
-2026/06/21 14:01:05.492537 [sub-B] Received: offset=4, payload="lb-msg-4" (Total consumed: 2/5)
-2026/06/21 14:01:05.693136 [sub-B] Received: offset=6, payload="lb-msg-6" (Total consumed: 3/5)
-2026/06/21 14:01:05.893953 [sub-B] Received: offset=8, payload="lb-msg-8" (Total consumed: 4/5)
-2026/06/21 14:01:06.094959 [sub-B] Received: offset=9, payload="lb-msg-9" (Total consumed: 5/5)
-2026/06/21 14:01:06.295405 [Demo] Reached target count of 5 messages. Gracefully exiting.
+2026/06/21 14:04:37.433235 [Demo] Subscriber "sub-B" in group "lb-group" starting for topic "lb-topic" to read 5 messages...
+2026/06/21 14:04:38.633773 [sub-B] Received: offset=1, payload="lb-msg-1" (Total consumed: 1/5)
+2026/06/21 14:04:38.834614 [sub-B] Received: offset=4, payload="lb-msg-4" (Total consumed: 2/5)
+2026/06/21 14:04:39.035477 [sub-B] Received: offset=5, payload="lb-msg-5" (Total consumed: 3/5)
+2026/06/21 14:04:39.236317 [sub-B] Received: offset=7, payload="lb-msg-7" (Total consumed: 4/5)
+2026/06/21 14:04:39.437333 [sub-B] Received: offset=9, payload="lb-msg-9" (Total consumed: 5/5)
+2026/06/21 14:04:39.637724 [Demo] Reached target count of 5 messages. Gracefully exiting.
+2026/06/21 14:04:39.638047 [Subscriber:sub-B] Fetch error: context canceled

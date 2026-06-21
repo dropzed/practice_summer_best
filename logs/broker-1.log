@@ -1,2 +1,2 @@
-2026/06/21 14:00:36.746448 [Broker:broker-1] Listening on :8081
-2026/06/21 14:00:38.749068 [Topic:safety-topic] Recovered. Messages: 0, MaxOffset: 0
+2026/06/21 14:04:09.801568 [Broker:broker-1] Listening on :8081
+2026/06/21 14:04:11.803370 [Topic:safety-topic] Recovered. Messages: 0, MaxOffset: 0

@@ -1,7 +1,7 @@
-2026/06/21 14:01:09.111249 [Demo] Publishing 5 messages to topic "restart-topic"...
-2026/06/21 14:01:09.114405 [Demo] Published message "restart-msg-part1-1" at offset 1
-2026/06/21 14:01:09.115487 [Demo] Published message "restart-msg-part1-2" at offset 2
-2026/06/21 14:01:09.116598 [Demo] Published message "restart-msg-part1-3" at offset 3
-2026/06/21 14:01:09.117697 [Demo] Published message "restart-msg-part1-4" at offset 4
-2026/06/21 14:01:09.118990 [Demo] Published message "restart-msg-part1-5" at offset 5
-2026/06/21 14:01:09.119003 [Demo] Successfully published 5 messages in 7.694229ms
+2026/06/21 14:04:42.456554 [Demo] Publishing 5 messages to topic "restart-topic"...
+2026/06/21 14:04:42.459519 [Demo] Published message "restart-msg-part1-1" at offset 1
+2026/06/21 14:04:42.460607 [Demo] Published message "restart-msg-part1-2" at offset 2
+2026/06/21 14:04:42.463732 [Demo] Published message "restart-msg-part1-3" at offset 3
+2026/06/21 14:04:42.465295 [Demo] Published message "restart-msg-part1-4" at offset 4
+2026/06/21 14:04:42.467811 [Demo] Published message "restart-msg-part1-5" at offset 5
+2026/06/21 14:04:42.467824 [Demo] Successfully published 5 messages in 11.210092ms

@@ -1,4 +1,4 @@
-2026/06/21 14:01:10.771868 [Broker:broker-2] Listening on :8082
-2026/06/21 14:01:12.774889 [Topic:topic-broker2] Recovered. Messages: 0, MaxOffset: 0
-2026/06/21 14:01:12.820418 [Broker:broker-2] Shutting down gracefully...
-2026/06/21 14:01:12.820476 [Broker:broker-2] Shutdown complete. Bye!
+2026/06/21 14:04:44.121431 [Broker:broker-2] Listening on :8082
+2026/06/21 14:04:46.123279 [Topic:topic-broker2] Recovered. Messages: 0, MaxOffset: 0
+2026/06/21 14:04:46.165018 [Broker:broker-2] Shutting down gracefully...
+2026/06/21 14:04:46.165068 [Broker:broker-2] Shutdown complete. Bye!

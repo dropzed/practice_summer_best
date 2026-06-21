@@ -1,0 +1,7 @@
+2026/06/21 14:01:09.535921 [Demo] Subscriber "sub-restart" in group "restart-group" starting for topic "restart-topic" to read 5 messages...
+2026/06/21 14:01:09.738388 [sub-restart] Received: offset=6, payload="restart-msg-part2-1" (Total consumed: 1/5)
+2026/06/21 14:01:09.738404 [sub-restart] Received: offset=7, payload="restart-msg-part2-2" (Total consumed: 2/5)
+2026/06/21 14:01:09.738410 [sub-restart] Received: offset=8, payload="restart-msg-part2-3" (Total consumed: 3/5)
+2026/06/21 14:01:09.738414 [sub-restart] Received: offset=9, payload="restart-msg-part2-4" (Total consumed: 4/5)
+2026/06/21 14:01:09.738421 [sub-restart] Received: offset=10, payload="restart-msg-part2-5" (Total consumed: 5/5)
+2026/06/21 14:01:09.738491 [Demo] Reached target count of 5 messages. Gracefully exiting.

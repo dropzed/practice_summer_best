@@ -32,7 +32,7 @@ func main() {
 
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
 
-	// Context that cancels on SIGINT/SIGTERM
+	// Контекст для отмены по сигналам SIGINT/SIGTERM
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
@@ -80,7 +80,7 @@ func main() {
 		)
 		defer cancel()
 
-		// Start subscription loop in background
+		// Запуск цикла подписки в фоне
 		go func() {
 			err := sub.Subscribe(subCtx, *topic, *limit, 200*time.Millisecond, func(msg protocol.Message) error {
 				mu.Lock()
@@ -94,7 +94,7 @@ func main() {
 				}
 
 				if consumedCount >= *count {
-					cancel() // Stop the subscription loop cleanly by cancelling context
+					cancel() // Чистая остановка цикла подписки отменой контекста
 				}
 				return nil
 			})
@@ -103,7 +103,7 @@ func main() {
 			}
 		}()
 
-		// Wait for completion or timeout
+		// Ожидание завершения или таймаута
 		select {
 		case <-subCtx.Done():
 			mu.Lock()
@@ -113,9 +113,9 @@ func main() {
 				log.Printf("[Demo] Cancelled. Consumed %d/%d messages.", consumedCount, *count)
 			}
 			mu.Unlock()
-			// Give a small moment for final ACKs to complete processing
+			// Даем время на отправку финальных ACK
 			time.Sleep(200 * time.Millisecond)
-		case <-time.After(65 * time.Second): // Safety timeout
+		case <-time.After(65 * time.Second): // Защитный таймаут
 			mu.Lock()
 			log.Printf("[Demo] Safety timeout reached. Consumed %d/%d messages. Exiting.", consumedCount, *count)
 			mu.Unlock()

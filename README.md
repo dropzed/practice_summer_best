@@ -1,128 +1,128 @@
-# Distributed Message Broker (Senior Edition)
+# Распределенный брокер сообщений (Senior Edition)
 
-This is a highly reliable, concurrent, and fault-tolerant message broker cluster written in **Go**. This version is designed with senior engineering practices, featuring fine-grained lock synchronization, a low-latency O(1) append-only storage engine with memory indexing, robust failover auto-routing, and client subscription cancellation.
+Это высоконадежный, конкурентный и отказоустойчивый кластер брокеров сообщений, написанный на **Go**. Данная версия разработана с использованием передовых инженерных практик, включая мелкогранулярную синхронизацию блокировок, хранилище с низким временем задержки O(1) (append-only log) и индексацией в оперативной памяти, автоматическую маршрутизацию при сбоях и корректную отмену подписок клиентов.
 
 ---
 
-## Architecture Design
+## Архитектура системы
 
 ```mermaid
 graph TD
-    subgraph Client Space
+    subgraph Пространство клиента (Client Space)
         Pub[Publisher SDK]
         Sub[Subscriber SDK]
     end
 
-    subgraph Control Plane
+    subgraph Управляющий узел (Control Plane)
         QM[Queue Manager]
-        Registry[(Offsets Registry)]
+        Registry[(Реестр смещений)]
     end
 
-    subgraph Data Plane
+    subgraph Узел данных (Data Plane)
         SB1[Service Broker 1]
         SB2[Service Broker 2]
-        Log1[(Durability Log 1)]
-        Log2[(Durability Log 2)]
+        Log1[(Лог данных 1)]
+        Log2[(Лог данных 2)]
     end
 
-    Pub -->|1. Route Topic| QM
-    Sub -->|1. Route Topic| QM
-    Pub -->|2. Publish| SB1
-    Sub -->|2. Fetch| SB1
-    SB1 <-->|Lease / ACK| QM
-    SB1 -->|Fsync Write| Log1
-    SB2 -->|Fsync Write| Log2
-    QM <-->|Atomic Save| Registry
+    Pub -->|1. Запрос маршрута топика| QM
+    Sub -->|1. Запрос маршрута топика| QM
+    Pub -->|2. Публикация сообщения| SB1
+    Sub -->|2. Чтение сообщения| SB1
+    SB1 <-->|Аренда / Подтверждение| QM
+    SB1 -->|Запись с fsync| Log1
+    SB2 -->|Запись с fsync| Log2
+    QM <-->|Атомарное сохранение| Registry
 ```
 
-### Components Summary
+### Описание компонентов
 
-1. **Queue Manager (Control Plane)**:
-   - **Fine-Grained Concurrency**: Uses separate read-write mutexes (`sync.RWMutex`) for the broker registry and individual mutexes per topic and consumer group, eliminating lock contention.
-   - **Atomic State Saving**: Employs double-buffered writes (saving to `.tmp` first, then atomically renaming the file) to protect offset persistence from corruption during sudden server terminations.
-   - **Failover Auto-Routing**: If a broker goes offline, the Queue Manager detects the timeout and dynamically migrates its topics to healthy brokers.
+1. **Queue Manager (Control Plane / Менеджер очереди)**:
+   - **Мелкогранулярная конкурентность**: Используются отдельные мьютексы чтения-записи (`sync.RWMutex`) для реестра брокеров и индивидуальные мьютексы для каждого топика и группы потребителей, что исключает конфликт блокировок.
+   - **Атомарное сохранение состояния**: Применяется запись с двойным буферированием (сначала в файл `.tmp`, затем атомарное переименование файла), что предотвращает повреждение сохраненных смещений (offsets) при внезапном отключении сервера.
+   - **Автоматическая маршрутизация при сбоях**: При отключении одного из брокеров Queue Manager фиксирует таймаут и динамически переносит его топики на здоровые брокеры.
 
-2. **Service Broker (Data Plane)**:
-   - **O(1) Indexed Storage Engine**: Instead of parsing files line-by-line, the broker writes messages to an append-only commit log and indexes each offset to its byte position (`FilePosition` and `Length`) in an in-memory map.
-   - **Concurrent Reads**: Leverages thread-safe `ReadAt` operations, allowing multiple subscriber fetch requests to read from disk concurrently without acquiring a write lock on the log file.
-   - **Durability Guarantee**: Forces physical disk flushing using `file.Sync()` (`fsync`) before returning a `200 OK` status to the publisher.
+2. **Service Broker (Data Plane / Брокер данных)**:
+   - **Индексируемое O(1) хранилище**: Вместо построчного чтения файлов брокер записывает сообщения в лог (append-only commit log) и сохраняет карту соответствия каждого смещения байтовой позиции в файле (`FilePosition` и `Length`) в оперативной памяти.
+   - **Параллельное чтение**: Используются потокобезопасные операции `ReadAt`, позволяющие нескольким подписчикам одновременно читать сообщения с диска без захвата блокировки на запись в файл лога.
+   - **Гарантия надежности (Durability)**: Выполняется принудительный сброс данных на диск через `file.Sync()` (`fsync`) перед отправкой ответа `200 OK` издателю.
 
-3. **Go Client SDK**:
-   - **Thundering Herd Protection**: Employs exponential backoff with full jitter for connection retries.
-   - **Context Cancellation**: The subscription polling loop uses standard Go `context.Context` to handle graceful client shutdown instantly.
+3. **Go Client SDK (Библиотека клиента)**:
+   - **Защита от эффекта "лавины" (Thundering Herd)**: Применяется экспоненциальная задержка со случайным распределением (jitter) при повторных попытках подключения.
+   - **Отмена через контекст (Context)**: Цикл опроса подписок использует стандартный Go-контекст `context.Context` для мгновенной и чистой остановки клиента.
 
 ---
 
-## API Protocols
+## Протоколы API
 
 ### Queue Manager (Control Plane)
-* `POST /brokers/register` — Broker startup registration.
-* `POST /brokers/heartbeat` — Periodic active broker status check.
-* `POST /topics/register` — Topic-to-Broker routing assignment.
-* `GET /topics/route?topic=<name>` — Returns the active broker address. Auto-assigns topics to active brokers if the current host goes offline.
-* `POST /qm/lease` — Negotiates message lease reservations for a subscriber (lock duration: 10s).
-* `POST /qm/ack` — Confirms successful message processing and commits offsets.
-* `GET /status` — Displays the system health status.
+* `POST /brokers/register` — Регистрация брокера при запуске.
+* `POST /brokers/heartbeat` — Периодическая отправка хартбитов активными брокерами.
+* `POST /topics/register` — Регистрация топика и привязка к брокеру.
+* `GET /topics/route?topic=<name>` — Получение адреса активного брокера для топика. Автоматически переназначает топик на другой брокер, если текущий хост оффлайн.
+* `POST /qm/lease` — Согласование аренды сообщений для подписчика (длительность блокировки: 10 секунд).
+* `POST /qm/ack` — Подтверждение успешной обработки сообщений и коммит смещений.
+* `GET /status` — Получение статуса здоровья всей системы.
 
 ### Service Broker (Data Plane)
-* `POST /publish` — Receives and persists payloads from publishers.
-* `POST /fetch` — Delivers leased message batches to subscribers.
-* `POST /ack` — Forwards subscriber processing acknowledgments to the Queue Manager.
+* `POST /publish` — Прием и сохранение сообщений от издателей.
+* `POST /fetch` — Доставка арендованных сообщений подписчикам.
+* `POST /ack` — Перенаправление подтверждений обработки от подписчиков в Queue Manager.
 
 ---
 
-## Quick Start Menu
+## Меню быстрого запуска
 
-We provide an interactive launcher `quick-start.sh` that automates both local and containerized deployments.
+В проекте есть интерактивный скрипт `quick-start.sh`, автоматизирующий локальный запуск и запуск в контейнерах.
 
-Run the launcher:
+Запуск скрипта:
 ```bash
 ./quick-start.sh
 ```
 
-Choose from the interactive menu:
-1. **Option 1**: Local verification (compiles binaries, spins up servers, runs the 4 reliability tests, and stops them).
-2. **Option 2**: Launches a 3-container cluster via Docker Compose (maps ports `8080`, `8081`, `8082` to the host).
-3. **Option 3**: Executes a test run (publishes and consumes 5 messages) inside the running Docker Compose network.
-4. **Option 4**: Gracefully stops the container network and purges temporary database volumes.
+Интерактивные опции:
+1. **Вариант 1**: Локальная проверка (компиляция бинарных файлов, запуск серверов, выполнение 4 тестов надежности и их остановка).
+2. **Вариант 2**: Запуск кластера из 3 контейнеров через Docker Compose (порты `8080`, `8081`, `8082` пробрасываются на хост).
+3. **Вариант 3**: Выполнение демонстрационного теста (публикация и чтение 5 сообщений) внутри запущенного Docker Compose окружения.
+4. **Вариант 4**: Плавная остановка контейнеров Docker и очистка временных томов баз данных.
 
 ---
 
-## Docker Compose Orchestration
+## Оркестрация в Docker Compose
 
-To run the containerized cluster directly:
+Для прямого запуска кластера в контейнерах выполните:
 ```bash
 docker compose up --build -d
 ```
 
-This spins up:
-* **Queue Manager**: `http://localhost:8080` (managing cluster consensus)
-* **Broker-1**: `http://localhost:8081` (hosting safety-topic and lb-topic)
-* **Broker-2**: `http://localhost:8082` (hosting broker2-topic)
+Будут запущены:
+* **Queue Manager**: `http://localhost:8080` (координатор кластера)
+* **Broker-1**: `http://localhost:8081` (хранит топики safety-topic и lb-topic)
+* **Broker-2**: `http://localhost:8082` (хранит топик broker2-topic)
 
-### Containerized Client Testing
-To interact with the cluster without installing Go locally on your host machine, use the `docker-demo.sh` proxy tool:
+### Тестирование клиента в контейнере
+Чтобы взаимодействовать с кластером без необходимости устанавливать Go на хост-машине, используйте скрипт-прокси `docker-demo.sh`:
 
-* **Publish messages**:
+* **Отправить сообщения**:
   ```bash
-  ./docker-demo.sh -mode publish -topic compose-topic -count 10 -payload "message-body"
+  ./docker-demo.sh -mode publish -topic compose-topic -count 10 -payload "body"
   ```
-* **Consume messages**:
+* **Прочитать сообщения**:
   ```bash
   ./docker-demo.sh -mode subscribe -topic compose-topic -group group-A -id sub-1 -count 10
   ```
-* **Inspect cluster state**:
+* **Проверить статус кластера**:
   ```bash
   ./docker-demo.sh -mode status
   ```
 
 ---
 
-## Multi-VM Production Deployment
+## Развертывание в продакшене на нескольких VM
 
-For production deployments across physical VMs, execute the compiled binaries with appropriate flags:
+Для продакшн-развертывания на физических или виртуальных машинах запускайте скомпилированные бинарники с нужными флагами:
 
-### VM 1: Cluster Coordinator (Queue Manager)
+### VM 1: Координатор кластера (Queue Manager)
 ```bash
 ./bin/manager -port 8080 -state /var/lib/message-broker/state.json
 ```

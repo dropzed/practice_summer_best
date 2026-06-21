@@ -1,0 +1,17 @@
+{
+  "topics": {
+    "lb-topic": {
+      "lb-group": 11
+    },
+    "multigroup-topic": {
+      "group-A": 6,
+      "group-B": 6
+    },
+    "restart-topic": {
+      "restart-group": 11
+    },
+    "safety-topic": {
+      "safety-group": 1001
+    }
+  }
+}

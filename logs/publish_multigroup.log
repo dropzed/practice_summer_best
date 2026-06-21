@@ -1,0 +1,7 @@
+2026/06/21 14:01:09.945999 [Demo] Publishing 5 messages to topic "multigroup-topic"...
+2026/06/21 14:01:09.949778 [Demo] Published message "multi-msg-1" at offset 1
+2026/06/21 14:01:09.951063 [Demo] Published message "multi-msg-2" at offset 2
+2026/06/21 14:01:09.952346 [Demo] Published message "multi-msg-3" at offset 3
+2026/06/21 14:01:09.953721 [Demo] Published message "multi-msg-4" at offset 4
+2026/06/21 14:01:09.954900 [Demo] Published message "multi-msg-5" at offset 5
+2026/06/21 14:01:09.954912 [Demo] Successfully published 5 messages in 8.823984ms

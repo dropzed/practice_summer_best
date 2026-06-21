@@ -2,24 +2,24 @@ FROM golang:1.22-alpine AS builder
 
 WORKDIR /app
 
-# Copy dependency definition
+# Копирование описания зависимостей
 COPY go.mod ./
 
-# Copy source code
+# Копирование исходного кода
 COPY pkg/ ./pkg/
 COPY cmd/ ./cmd/
 
-# Build binaries
+# Сборка бинарных файлов
 RUN go build -o manager cmd/manager/main.go
 RUN go build -o broker cmd/broker/main.go
 RUN go build -o demo cmd/demo/main.go
 
-# Production stage
+# Финальный образ
 FROM alpine:latest
 
 WORKDIR /app
 
-# Install bash and curl for demo and testing
+# Установка bash и curl для тестирования
 RUN apk add --no-cache bash curl
 
 COPY --from=builder /app/manager /app/manager

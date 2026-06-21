@@ -1,5 +1,4 @@
-// Package sdk provides a high-level API for publishing and subscribing
-// to topics in the distributed message broker cluster.
+// Package sdk предоставляет высокоуровневый API для публикации и подписки.
 package sdk
 
 import (
@@ -19,16 +18,16 @@ import (
 	"message-broker/pkg/protocol"
 )
 
-// Client handles topic routing and HTTP connections.
+// Client управляет маршрутизацией топиков и HTTP-соединениями.
 type Client struct {
 	qmAddr      string
 	httpClient  *http.Client
 	cacheMu     sync.RWMutex
-	brokerCache map[string]string // topic -> broker address
+	brokerCache map[string]string // топик -> адрес брокера
 }
 
 func NewClient(qmAddr string) *Client {
-	// Custom transport with pooled connections and conservative timeouts
+	// Пул соединений с консервативными таймаутами
 	tr := &http.Transport{
 		DialContext: (&net.Dialer{
 			Timeout:   2 * time.Second,
@@ -50,7 +49,7 @@ func NewClient(qmAddr string) *Client {
 	}
 }
 
-// getBrokerAddress resolves the address of the broker hosting the topic, with caching.
+// getBrokerAddress определяет адрес брокера для топика с кэшированием.
 func (c *Client) getBrokerAddress(ctx context.Context, topic string, forceRefresh bool) (string, error) {
 	if !forceRefresh {
 		c.cacheMu.RLock()
@@ -102,7 +101,7 @@ func (c *Client) invalidateRoute(topic string) {
 	c.cacheMu.Unlock()
 }
 
-// Publisher implements the publish client.
+// Publisher реализует клиент публикации.
 type Publisher struct {
 	client *Client
 }
@@ -111,7 +110,7 @@ func NewPublisher(qmAddr string) *Publisher {
 	return &Publisher{client: NewClient(qmAddr)}
 }
 
-// Publish writes a message payload to a specific topic with retry backoff.
+// Publish отправляет сообщение в топик с экспоненциальной задержкой.
 func (p *Publisher) Publish(ctx context.Context, topic string, payload string) (uint64, error) {
 	var lastErr error
 	backoff := 50 * time.Millisecond
@@ -175,7 +174,7 @@ func (p *Publisher) Publish(ctx context.Context, topic string, payload string) (
 }
 
 func (p *Publisher) sleepWithJitter(ctx context.Context, duration time.Duration) {
-	// Add full jitter (0 to duration) to avoid thundering herd
+	// Добавляем джиттер для избежания "thundering herd"
 	jitter := time.Duration(rand.Int63n(int64(duration)))
 	select {
 	case <-ctx.Done():
@@ -183,7 +182,7 @@ func (p *Publisher) sleepWithJitter(ctx context.Context, duration time.Duration)
 	}
 }
 
-// Subscriber implements the fetch/ack client.
+// Subscriber реализует клиент получения и подтверждения (fetch/ack).
 type Subscriber struct {
 	client       *Client
 	group        string
@@ -198,7 +197,7 @@ func NewSubscriber(qmAddr, group, subscriberID string) *Subscriber {
 	}
 }
 
-// Fetch retrieves a batch of messages from the broker hosting the topic.
+// Fetch запрашивает пакет сообщений у брокера.
 func (s *Subscriber) Fetch(ctx context.Context, topic string, limit int) ([]protocol.Message, error) {
 	var lastErr error
 	backoff := 50 * time.Millisecond
@@ -263,7 +262,7 @@ func (s *Subscriber) Fetch(ctx context.Context, topic string, limit int) ([]prot
 	return nil, fmt.Errorf("fetch failed after 5 attempts: %w", lastErr)
 }
 
-// Ack confirms successful processing of message offsets.
+// Ack подтверждает успешную обработку смещений сообщений.
 func (s *Subscriber) Ack(ctx context.Context, topic string, offsets []uint64) error {
 	if len(offsets) == 0 {
 		return nil
@@ -334,8 +333,7 @@ func (s *Subscriber) sleepWithJitter(ctx context.Context, duration time.Duration
 	}
 }
 
-// Subscribe listens to a topic and executes the handler for received messages in a loop.
-// It executes cleanly and cancels immediately when the context is cancelled.
+// Subscribe слушает топик в цикле и запускает обработчик сообщений.
 func (s *Subscriber) Subscribe(ctx context.Context, topic string, limit int, pollInterval time.Duration, handler func(protocol.Message) error) error {
 	ticker := time.NewTicker(pollInterval)
 	defer ticker.Stop()
@@ -347,7 +345,7 @@ func (s *Subscriber) Subscribe(ctx context.Context, topic string, limit int, pol
 		case <-ticker.C:
 			msgs, err := s.Fetch(ctx, topic, limit)
 			if err != nil {
-				// Log and retry on next tick
+				// Логируем ошибку
 				log.Printf("[Subscriber:%s] Fetch error: %v", s.subscriberID, err)
 				continue
 			}
@@ -358,7 +356,7 @@ func (s *Subscriber) Subscribe(ctx context.Context, topic string, limit int, pol
 
 			var ackOffsets []uint64
 			for _, msg := range msgs {
-				// Process message
+				// Обработка сообщения
 				if err := handler(msg); err == nil {
 					ackOffsets = append(ackOffsets, msg.Offset)
 				} else {

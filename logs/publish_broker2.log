@@ -1,0 +1,5 @@
+2026/06/21 14:01:12.771733 [Demo] Publishing 3 messages to topic "topic-broker2"...
+2026/06/21 14:01:12.776041 [Demo] Published message "broker2-msg-1" at offset 1
+2026/06/21 14:01:12.777270 [Demo] Published message "broker2-msg-2" at offset 2
+2026/06/21 14:01:12.778370 [Demo] Published message "broker2-msg-3" at offset 3
+2026/06/21 14:01:12.778384 [Demo] Successfully published 3 messages in 6.571713ms

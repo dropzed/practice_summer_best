@@ -1,23 +1,23 @@
 package protocol
 
-// Message represents a single message published to a topic.
+// Message представляет одно сообщение, опубликованное в топик.
 type Message struct {
 	Offset  uint64 `json:"offset"`
 	Payload string `json:"payload"`
 }
 
-// PublishRequest is sent by publishers to write a message to a topic.
+// PublishRequest отправляется издателями для записи сообщения в топик.
 type PublishRequest struct {
 	Topic   string `json:"topic"`
 	Payload string `json:"payload"`
 }
 
-// PublishResponse is returned upon successful writing.
+// PublishResponse возвращается при успешной записи.
 type PublishResponse struct {
 	Offset uint64 `json:"offset"`
 }
 
-// FetchRequest is sent by subscribers via the SDK to poll messages.
+// FetchRequest отправляется подписчиками через SDK для получения сообщений.
 type FetchRequest struct {
 	Topic        string `json:"topic"`
 	Group        string `json:"group"`
@@ -25,12 +25,12 @@ type FetchRequest struct {
 	Limit        int    `json:"limit"`
 }
 
-// FetchResponse is returned to subscribers with the leased messages.
+// FetchResponse возвращается подписчикам с арендованными сообщениями.
 type FetchResponse struct {
 	Messages []Message `json:"messages"`
 }
 
-// AckRequest is sent by subscribers via the SDK to confirm message processing.
+// AckRequest отправляется подписчиками через SDK для подтверждения обработки.
 type AckRequest struct {
 	Topic        string   `json:"topic"`
 	Group        string   `json:"group"`
@@ -38,19 +38,19 @@ type AckRequest struct {
 	Offsets      []uint64 `json:"offsets"`
 }
 
-// BrokerRegisterRequest is sent by brokers on registration and heartbeats.
+// BrokerRegisterRequest отправляется брокерами при регистрации и хартбитах.
 type BrokerRegisterRequest struct {
 	ID      string `json:"id"`
 	Address string `json:"address"`
 }
 
-// TopicRegisterRequest is sent by brokers to register support for a topic.
+// TopicRegisterRequest отправляется брокерами для регистрации топика.
 type TopicRegisterRequest struct {
 	Topic    string `json:"topic"`
 	BrokerID string `json:"broker_id"`
 }
 
-// QMLeaseRequest is sent by the Broker to the Queue Manager to negotiate offsets.
+// QMLeaseRequest отправляется брокером в Queue Manager для согласования офсетов.
 type QMLeaseRequest struct {
 	Topic           string `json:"topic"`
 	Group           string `json:"group"`
@@ -59,12 +59,12 @@ type QMLeaseRequest struct {
 	BrokerMaxOffset uint64 `json:"broker_max_offset"`
 }
 
-// QMLeaseResponse contains the list of offsets leased to the subscriber.
+// QMLeaseResponse содержит список арендованных офсетов.
 type QMLeaseResponse struct {
 	Offsets []uint64 `json:"offsets"`
 }
 
-// QMAckRequest is sent by the Broker to the Queue Manager to commit offsets.
+// QMAckRequest отправляется брокером в Queue Manager для фиксации офсетов.
 type QMAckRequest struct {
 	Topic        string   `json:"topic"`
 	Group        string   `json:"group"`
@@ -72,21 +72,21 @@ type QMAckRequest struct {
 	Offsets      []uint64 `json:"offsets"`
 }
 
-// GroupStatus defines status representation for a consumer group.
+// GroupStatus определяет статус группы потребителей.
 type GroupStatus struct {
 	CommittedOffset   uint64   `json:"committed_offset"`
 	PendingAcksCount  int      `json:"pending_acks_count"`
 	ActiveSubscribers []string `json:"active_subscribers"`
 }
 
-// TopicStatus defines status representation for a topic.
+// TopicStatus определяет статус топика.
 type TopicStatus struct {
 	BrokerID     string                 `json:"broker_id"`
 	ActiveGroups map[string]GroupStatus `json:"active_groups"`
 }
 
-// StatusResponse is returned by /status showing the cluster topology.
+// StatusResponse возвращается эндпоинтом /status и показывает топологию кластера.
 type StatusResponse struct {
-	ActiveBrokers map[string]string      `json:"active_brokers"` // ID -> Address
+	ActiveBrokers map[string]string      `json:"active_brokers"` // ID -> Адрес
 	Topics        map[string]TopicStatus `json:"topics"`
 }

@@ -1,0 +1,12 @@
+2026/06/21 14:01:05.091765 [Demo] Publishing 10 messages to topic "lb-topic"...
+2026/06/21 14:01:05.094802 [Demo] Published message "lb-msg-1" at offset 1
+2026/06/21 14:01:05.096833 [Demo] Published message "lb-msg-2" at offset 2
+2026/06/21 14:01:05.097934 [Demo] Published message "lb-msg-3" at offset 3
+2026/06/21 14:01:05.099046 [Demo] Published message "lb-msg-4" at offset 4
+2026/06/21 14:01:05.100150 [Demo] Published message "lb-msg-5" at offset 5
+2026/06/21 14:01:05.101233 [Demo] Published message "lb-msg-6" at offset 6
+2026/06/21 14:01:05.102325 [Demo] Published message "lb-msg-7" at offset 7
+2026/06/21 14:01:05.103422 [Demo] Published message "lb-msg-8" at offset 8
+2026/06/21 14:01:05.104522 [Demo] Published message "lb-msg-9" at offset 9
+2026/06/21 14:01:05.105635 [Demo] Published message "lb-msg-10" at offset 10
+2026/06/21 14:01:05.105644 [Demo] Successfully published 10 messages in 13.824824ms

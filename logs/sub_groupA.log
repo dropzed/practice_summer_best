@@ -1,0 +1,7 @@
+2026/06/21 14:01:09.957401 [Demo] Subscriber "sub-groupA" in group "group-A" starting for topic "multigroup-topic" to read 5 messages...
+2026/06/21 14:01:10.159682 [sub-groupA] Received: offset=1, payload="multi-msg-1" (Total consumed: 1/5)
+2026/06/21 14:01:10.159694 [sub-groupA] Received: offset=2, payload="multi-msg-2" (Total consumed: 2/5)
+2026/06/21 14:01:10.159698 [sub-groupA] Received: offset=3, payload="multi-msg-3" (Total consumed: 3/5)
+2026/06/21 14:01:10.159701 [sub-groupA] Received: offset=4, payload="multi-msg-4" (Total consumed: 4/5)
+2026/06/21 14:01:10.159704 [sub-groupA] Received: offset=5, payload="multi-msg-5" (Total consumed: 5/5)
+2026/06/21 14:01:10.159750 [Demo] Reached target count of 5 messages. Gracefully exiting.

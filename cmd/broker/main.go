@@ -21,13 +21,13 @@ import (
 	"message-broker/pkg/protocol"
 )
 
-// IndexEntry holds the file position and length of a message.
+// IndexEntry хранит позицию и длину сообщения в файле.
 type IndexEntry struct {
 	Pos int64
 	Len int
 }
 
-// TopicStore manages durability logs and offset indexing for a single topic.
+// TopicStore управляет логами и индексацией смещений для топика.
 type TopicStore struct {
 	mu        sync.Mutex
 	topic     string
@@ -57,7 +57,7 @@ func NewTopicStore(topic, dataDir string) (*TopicStore, error) {
 	return ts, nil
 }
 
-// Recover builds the offset index by reading the file sequentially on startup.
+// Recover восстанавливает индекс смещений при запуске.
 func (ts *TopicStore) Recover() error {
 	file, err := os.OpenFile(ts.filePath, os.O_CREATE|os.O_RDWR|os.O_APPEND, 0644)
 	if err != nil {
@@ -92,7 +92,7 @@ func (ts *TopicStore) Recover() error {
 	return nil
 }
 
-// Publish appends a message to the log, updates the index, and syncs to disk.
+// Publish добавляет сообщение в лог, обновляет индекс и сбрасывает данные на диск.
 func (ts *TopicStore) Publish(payload string) (uint64, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
@@ -115,7 +115,7 @@ func (ts *TopicStore) Publish(payload string) (uint64, error) {
 		return 0, err
 	}
 
-	// Guarantee physical persistence
+	// Гарантируем физическую запись на диск (fsync)
 	if err := ts.file.Sync(); err != nil {
 		return 0, err
 	}
@@ -128,7 +128,7 @@ func (ts *TopicStore) Publish(payload string) (uint64, error) {
 	return offset, nil
 }
 
-// ReadOffsets retrieves messages for specified offsets concurrently using ReadAt.
+// ReadOffsets параллельно считывает сообщения по смещениям через ReadAt.
 func (ts *TopicStore) ReadOffsets(offsets []uint64) []protocol.Message {
 	ts.indexMu.RLock()
 	defer ts.indexMu.RUnlock()
@@ -170,7 +170,7 @@ func (ts *TopicStore) Close() error {
 	return nil
 }
 
-// Broker implements the Service Broker server.
+// Broker реализует сервер Service Broker.
 type Broker struct {
 	id           string
 	port         int
@@ -209,7 +209,7 @@ func (b *Broker) getOrCreateTopicStore(topic string) (*TopicStore, error) {
 	b.storesMu.Lock()
 	defer b.storesMu.Unlock()
 	
-	// Double check
+	// Двойная проверка (Double-checked locking)
 	ts, exists = b.topicStores[topic]
 	if exists {
 		return ts, nil
@@ -221,7 +221,7 @@ func (b *Broker) getOrCreateTopicStore(topic string) (*TopicStore, error) {
 	}
 	b.topicStores[topic] = ts
 
-	// Register the topic with the Queue Manager asynchronously
+	// Асинхронно регистрируем топик в Queue Manager
 	go b.registerTopicWithQM(topic)
 
 	return ts, nil
@@ -328,7 +328,7 @@ func (b *Broker) handleFetch(w http.ResponseWriter, r *http.Request) {
 
 	maxOffset := ts.MaxOffset()
 
-	// Negotiate offset leases with the Queue Manager
+	// Запрашиваем аренду смещений у Queue Manager
 	leaseReq, _ := json.Marshal(protocol.QMLeaseRequest{
 		Topic:           req.Topic,
 		Group:           req.Group,
@@ -376,7 +376,7 @@ func (b *Broker) handleAck(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Forward ACK request directly to Queue Manager
+	// Перенаправляем запрос ACK в Queue Manager
 	qmAckBody, _ := json.Marshal(protocol.QMAckRequest{
 		Topic:        req.Topic,
 		Group:        req.Group,
@@ -412,7 +412,7 @@ func main() {
 	instanceDataDir := filepath.Join(*dataDir, *id)
 	b := NewBroker(*id, *port, *qmAddr, instanceDataDir, *externalAddr)
 
-	// Discover and reload existing topic files in the dataDir
+	// Находим и загружаем существующие файлы топиков
 	files, err := os.ReadDir(instanceDataDir)
 	if err == nil {
 		for _, f := range files {
@@ -425,7 +425,7 @@ func main() {
 		}
 	}
 
-	// Dynamic registration loop on startup (retries until QM is online)
+	// Регистрация при запуске (повторяем, пока QM не в сети)
 	for {
 		if err := b.registerWithQM(); err != nil {
 			log.Printf("[Broker:%s] Waiting for Queue Manager to come online: %v", b.id, err)
@@ -438,7 +438,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// Active heartbeat ticker
+	// Отправка хартбитов
 	go func(ctx context.Context) {
 		ticker := time.NewTicker(2 * time.Second)
 		defer ticker.Stop()
@@ -469,7 +469,7 @@ func main() {
 		}
 	}()
 
-	// Graceful shutdown handling
+	// Плавное завершение работы
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
 	<-stop
@@ -484,7 +484,7 @@ func main() {
 		log.Printf("[Broker:%s] Graceful shutdown failed: %v", err)
 	}
 
-	// Safely close all database file handles
+	// Закрываем дескрипторы файлов логов
 	b.storesMu.Lock()
 	for _, store := range b.topicStores {
 		if err := store.Close(); err != nil {

@@ -18,13 +18,13 @@ import (
 	"message-broker/pkg/protocol"
 )
 
-// OffsetLease represents an outstanding message reservation by a consumer.
+// OffsetLease представляет резервирование сообщения консьюмером.
 type OffsetLease struct {
 	SubscriberID string    `json:"subscriber_id"`
 	Expiry       time.Time `json:"expiry"`
 }
 
-// ConsumerGroupState manages the offsets and leases for a single consumer group.
+// ConsumerGroupState управляет смещениями и арендой для группы.
 type ConsumerGroupState struct {
 	mu              sync.Mutex
 	CommittedOffset uint64          `json:"committed_offset"`
@@ -34,13 +34,13 @@ type ConsumerGroupState struct {
 
 func NewConsumerGroupState() *ConsumerGroupState {
 	return &ConsumerGroupState{
-		CommittedOffset: 1, // Offsets start at 1
+		CommittedOffset: 1, // Смещения начинаются с 1
 		ResolvedOffsets: make(map[uint64]bool),
 		Leases:          make(map[uint64]OffsetLease),
 	}
 }
 
-// TopicState manages routing and group states for a single topic.
+// TopicState управляет маршрутизацией и состояниями групп для топика.
 type TopicState struct {
 	mu       sync.RWMutex
 	BrokerID string
@@ -54,23 +54,23 @@ func NewTopicState(brokerID string) *TopicState {
 	}
 }
 
-// StateSerialization is used for persisting committed offsets to disk.
+// StateSerialization используется для сохранения смещений на диск.
 type StateSerialization struct {
-	Topics map[string]map[string]uint64 `json:"topics"` // topic -> group -> committedOffset
+	Topics map[string]map[string]uint64 `json:"topics"` // топик -> группа -> committedOffset
 }
 
-// QueueManager is the central coordinator for system routing and metadata.
+// QueueManager — центральный координатор маршрутизации и метаданных.
 type QueueManager struct {
 	statePath    string
-	stateLock    sync.Mutex // Protects file write and serialization of registry
+	stateLock    sync.Mutex // Защищает запись в файл и сериализацию реестра
 	
 	brokersMu    sync.RWMutex
-	brokers      map[string]string    // ID -> Address
-	brokerHeart  map[string]time.Time // ID -> Last Heartbeat time
+	brokers      map[string]string    // ID -> Адрес
+	brokerHeart  map[string]time.Time // ID -> Время последнего хартбита
 
 	topicsMu     sync.RWMutex
 	topics       map[string]*TopicState
-	subLastSeen  map[string]map[string]time.Time // Topic -> SubID -> LastSeen (in-memory)
+	subLastSeen  map[string]map[string]time.Time // Топик -> SubID -> Время активности (в памяти)
 	subSeenMu    sync.RWMutex
 }
 
@@ -84,7 +84,7 @@ func NewQueueManager(statePath string) *QueueManager {
 	}
 }
 
-// LoadState restores committed offsets from the JSON registry.
+// LoadState восстанавливает сохраненные смещения из JSON.
 func (qm *QueueManager) LoadState() error {
 	qm.stateLock.Lock()
 	defer qm.stateLock.Unlock()
@@ -120,7 +120,7 @@ func (qm *QueueManager) LoadState() error {
 	return nil
 }
 
-// SaveState persists committed offsets atomically.
+// SaveState атомарно сохраняет смещения.
 func (qm *QueueManager) SaveState() error {
 	qm.stateLock.Lock()
 	defer qm.stateLock.Unlock()
@@ -154,7 +154,7 @@ func (qm *QueueManager) SaveState() error {
 		return err
 	}
 
-	// Atomic write using a temp file and rename (prevent file corruption on crashes)
+	// Атомарная запись через временный файл и переименование
 	tmpPath := qm.statePath + ".tmp"
 	if err := os.WriteFile(tmpPath, data, 0644); err != nil {
 		return err
@@ -248,7 +248,7 @@ func (qm *QueueManager) RouteTopic(w http.ResponseWriter, r *http.Request) {
 		qm.brokersMu.RUnlock()
 	}
 
-	// Dynamic routing: if topic has no host or the host broker is offline, re-route to an active broker
+	// Динамическая маршрутизация: перенаправление на активный брокер при сбое топика или хоста
 	if addr == "" {
 		qm.brokersMu.RLock()
 		var activeIDs []string
@@ -266,7 +266,7 @@ func (qm *QueueManager) RouteTopic(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// Choose the broker with the minimum number of topics assigned (simple load balancing)
+		// Выбор брокера с наименьшим числом топиков (балансировка нагрузки)
 		chosenBroker := activeIDs[0]
 		minTopics := -1
 		for _, bID := range activeIDs {
@@ -331,7 +331,7 @@ func (qm *QueueManager) LeaseOffsets(w http.ResponseWriter, r *http.Request) {
 	}
 	ts.mu.Unlock()
 
-	// Track subscriber activity
+	// Отслеживание активности подписчиков
 	qm.subSeenMu.Lock()
 	if qm.subLastSeen[req.Topic] == nil {
 		qm.subLastSeen[req.Topic] = make(map[string]time.Time)
@@ -350,21 +350,21 @@ func (qm *QueueManager) LeaseOffsets(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 
-		// Skip if offset was already processed and ACKed
+		// Пропуск обработанных и подтвержденных смещений
 		if gs.ResolvedOffsets[offset] {
 			continue
 		}
 
 		lease, active := gs.Leases[offset]
 		if active && now.Before(lease.Expiry) {
-			// Offset is currently locked and processing by another subscriber
+			// Смещение заблокировано другим подписчиком
 			continue
 		}
 
-		// Lease offset
+		// Аренда смещения
 		gs.Leases[offset] = OffsetLease{
 			SubscriberID: req.SubscriberID,
-			Expiry:       now.Add(10 * time.Second), // 10s default lease
+			Expiry:       now.Add(10 * time.Second), // Аренда на 10 секунд по умолчанию
 		}
 		leased = append(leased, offset)
 	}
@@ -406,7 +406,7 @@ func (qm *QueueManager) AckOffsets(w http.ResponseWriter, r *http.Request) {
 		delete(gs.Leases, offset)
 	}
 
-	// Move committed pointer forward past resolved contiguous offsets
+	// Сдвигаем committed offset вперед по непрерывной цепочке resolved
 	originalOffset := gs.CommittedOffset
 	for gs.ResolvedOffsets[gs.CommittedOffset] {
 		delete(gs.ResolvedOffsets, gs.CommittedOffset)
@@ -414,7 +414,7 @@ func (qm *QueueManager) AckOffsets(w http.ResponseWriter, r *http.Request) {
 	}
 	gs.mu.Unlock()
 
-	// If CommittedOffset moved, persist metadata to disk
+	// Если CommittedOffset изменился, сохраняем метаданные на диск
 	if gs.CommittedOffset != originalOffset {
 		go func() {
 			if err := qm.SaveState(); err != nil {
@@ -429,7 +429,7 @@ func (qm *QueueManager) AckOffsets(w http.ResponseWriter, r *http.Request) {
 func (qm *QueueManager) GetStatus(w http.ResponseWriter, r *http.Request) {
 	now := time.Now()
 
-	// Gather active brokers
+	// Сбор активных брокеров
 	qm.brokersMu.RLock()
 	activeBrokers := make(map[string]string)
 	for id, addr := range qm.brokers {
@@ -479,7 +479,7 @@ func (qm *QueueManager) GetStatus(w http.ResponseWriter, r *http.Request) {
 			}
 			gs.mu.Unlock()
 
-			// Gather active subscribers seen in last 30s
+			// Сбор подписчиков, активных за последние 30 секунд
 			var activeSubs []string
 			qm.subSeenMu.RLock()
 			if subs, exists := qm.subLastSeen[topicName]; exists {
@@ -509,7 +509,7 @@ func (qm *QueueManager) GetStatus(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewEncoder(w).Encode(status)
 }
 
-// RequestLogger is an HTTP middleware for logging incoming requests.
+// RequestLogger — middleware для логирования входящих запросов.
 func RequestLogger(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
@@ -530,7 +530,7 @@ func main() {
 		log.Fatalf("[QueueManager] Failed to restore state: %v", err)
 	}
 
-	// Background ticker to prune dead brokers
+	// Фоновый тикер для удаления неактивных брокеров
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -577,7 +577,7 @@ func main() {
 		}
 	}()
 
-	// Graceful shutdown handling
+	// Плавное завершение работы
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
 	<-stop
